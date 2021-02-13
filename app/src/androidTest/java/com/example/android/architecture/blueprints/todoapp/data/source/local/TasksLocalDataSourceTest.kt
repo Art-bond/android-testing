@@ -1,18 +1,3 @@
-/*
- * Copyright 2019, The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package com.example.android.architecture.blueprints.todoapp.data.source.local
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
@@ -35,36 +20,36 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/**
- * Integration test for the [TasksDataSource].
- */
+
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 @MediumTest
 class TasksLocalDataSourceTest {
 
-    private lateinit var localDataSource: TasksLocalDataSource
-    private lateinit var database: ToDoDatabase
+
 
     // Executes each task synchronously using Architecture Components.
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
 
+    private lateinit var localDataSource: TasksLocalDataSource
+    private lateinit var database: ToDoDatabase
+
     @Before
     fun setup() {
-        // using an in-memory database for testing, since it doesn't survive killing the process
+        // Using an in-memory database for testing, because it doesn't survive killing the process.
         database = Room.inMemoryDatabaseBuilder(
-            ApplicationProvider.getApplicationContext(),
-            ToDoDatabase::class.java
+                ApplicationProvider.getApplicationContext(),
+                ToDoDatabase::class.java
         )
-            .allowMainThreadQueries()
-            .build()
+                .allowMainThreadQueries()
+                .build()
 
         localDataSource =
-            TasksLocalDataSource(
-                database.taskDao(),
-                Dispatchers.Main
-            )
+                TasksLocalDataSource(
+                        database.taskDao(),
+                        Dispatchers.Main
+                )
     }
 
     @After
@@ -72,18 +57,18 @@ class TasksLocalDataSourceTest {
         database.close()
     }
 
-    // runBlocking used here because of https://github.com/Kotlin/kotlinx.coroutines/issues/1204
-    // TODO replace with runBlockingTest once issue is resolved
+    // runBlocking is used here because of https://github.com/Kotlin/kotlinx.coroutines/issues/1204
+// TODO: Replace with runBlockingTest once issue is resolved
     @Test
     fun saveTask_retrievesTask() = runBlocking {
-        // GIVEN - a new task saved in the database
+        // GIVEN - A new task saved in the database.
         val newTask = Task("title", "description", false)
         localDataSource.saveTask(newTask)
 
-        // WHEN  - Task retrieved by ID
+        // WHEN  - Task retrieved by ID.
         val result = localDataSource.getTask(newTask.id)
 
-        // THEN - Same task is returned
+        // THEN - Same task is returned.
         assertThat(result.succeeded, `is`(true))
         result as Success
         assertThat(result.data.title, `is`("title"))
@@ -92,20 +77,20 @@ class TasksLocalDataSourceTest {
     }
 
     @Test
-    fun completeTask_retrievedTaskIsComplete() = runBlocking {
-        // Given a new task in the persistent repository
-        val newTask = Task("title")
+    fun completeTask_retrievedTaskIsComplete() = runBlocking{
+        // 1. Save a new active task in the local data source.
+        val newTask = Task("title", "description", false)
         localDataSource.saveTask(newTask)
-
-        // When completed in the persistent repository
-        localDataSource.completeTask(newTask)
+        // 2. Mark it as complete.
+        localDataSource.completeTask(newTask.id)
         val result = localDataSource.getTask(newTask.id)
 
-        // Then the task can be retrieved from the persistent repository and is complete
+        // 3. Check that the task can be retrieved from the local data source and is complete.
         assertThat(result.succeeded, `is`(true))
         result as Success
         assertThat(result.data.title, `is`(newTask.title))
         assertThat(result.data.isCompleted, `is`(true))
+
     }
 
 }

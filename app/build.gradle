@@ -31,6 +31,11 @@ android {
         includeAndroidResources = true
         returnDefaultValues = true
     }
+
+    testOptions.unitTests {
+        includeAndroidResources = true
+        returnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -90,4 +95,13 @@ dependencies {
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
     implementation "androidx.fragment:fragment-ktx:$fragmentKtxVersion"
+
+    // Dependencies for Android instrumented unit tests
+    androidTestImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion"
+
+    androidTestImplementation "androidx.arch.core:core-testing:$archTestingVersion"
+
+    implementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
+
+
 }

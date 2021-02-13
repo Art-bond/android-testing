@@ -1,19 +1,3 @@
-/*
- * Copyright 2019, The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.example.android.architecture.blueprints.todoapp.data.source.local
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
@@ -24,8 +8,7 @@ import androidx.test.filters.SmallTest
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
-import org.hamcrest.CoreMatchers.`is`
-import org.hamcrest.CoreMatchers.notNullValue
+import org.hamcrest.CoreMatchers.*
 import org.hamcrest.MatcherAssert.assertThat
 import org.junit.After
 import org.junit.Before
@@ -38,19 +21,19 @@ import org.junit.runner.RunWith
 @SmallTest
 class TasksDaoTest {
 
-    private lateinit var database: ToDoDatabase
-
     // Executes each task synchronously using Architecture Components.
     @get:Rule
     var instantExecutorRule = InstantTaskExecutorRule()
 
+    private lateinit var database: ToDoDatabase
+
     @Before
     fun initDb() {
-        // using an in-memory database because the information stored here disappears when the
-        // process is killed
+        // Using an in-memory database so that the information stored here disappears when the
+        // process is killed.
         database = Room.inMemoryDatabaseBuilder(
-            getApplicationContext(),
-            ToDoDatabase::class.java
+                getApplicationContext(),
+                ToDoDatabase::class.java
         ).build()
     }
 
@@ -59,14 +42,14 @@ class TasksDaoTest {
 
     @Test
     fun insertTaskAndGetById() = runBlockingTest {
-        // GIVEN - insert a task
+        // GIVEN - Insert a task.
         val task = Task("title", "description")
         database.taskDao().insertTask(task)
 
-        // WHEN - Get the task by id from the database
+        // WHEN - Get the task by id from the database.
         val loaded = database.taskDao().getTaskById(task.id)
 
-        // THEN - The loaded data contains the expected values
+        // THEN - The loaded data contains the expected values.
         assertThat<Task>(loaded as Task, notNullValue())
         assertThat(loaded.id, `is`(task.id))
         assertThat(loaded.title, `is`(task.title))
@@ -76,17 +59,18 @@ class TasksDaoTest {
 
     @Test
     fun updateTaskAndGetById() = runBlockingTest {
-        // When inserting a task
-        val originalTask = Task("title", "description")
-        database.taskDao().insertTask(originalTask)
+        // 1. Insert a task into the DAO.
+        val task = Task("title", "description")
+        database.taskDao().insertTask(task)
 
-        // When the task is updated
-        val updatedTask = Task("new title", "new description", true, originalTask.id)
-        database.taskDao().updateTask(updatedTask)
+        // 2. Update the task by creating a new task with the same ID but different attributes.
+        val taskUpdated = Task(id = task.id, title = "new title", description = "new description", isCompleted = true)
+        database.taskDao().updateTask(taskUpdated)
 
-        // THEN - The loaded data contains the expected values
-        val loaded = database.taskDao().getTaskById(originalTask.id)
-        assertThat(loaded?.id, `is`(originalTask.id))
+        // 3. Check that when you get the task by its ID, it has the updated values.
+        val loaded = database.taskDao().getTaskById(task.id)
+
+        assertThat(loaded?.id, `is`(task.id))
         assertThat(loaded?.title, `is`("new title"))
         assertThat(loaded?.description, `is`("new description"))
         assertThat(loaded?.isCompleted, `is`(true))
